@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ENUMS
+
+enum UserRole {
+  AUTHOR
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketCategory {
+  ROYALTY_PAYMENTS
+  ISBN_METADATA_ISSUES
+  PRINTING_QUALITY
+  DISTRIBUTION_AVAILABILITY
+  BOOK_STATUS_PRODUCTION
+  GENERAL_INQUIRY
+}
+
+enum TicketPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum MessageVisibility {
+  PUBLIC
+  INTERNAL
+}
+
+
+// USER MODEL
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(AUTHOR)
+
+  phone      String?
+  city       String?
+  joinedDate DateTime? @db.Date
+
+  // Relationships
+  books           Book[]
+  tickets         Ticket[]  @relation("TicketAuthor")
+  assignedTickets Ticket[]  @relation("TicketAssignee")
+  messages        Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+}
+
+// BOOK MODEL
+
+model Book {
+  id     String @id @default(uuid())
+  title  String
+  isbn   String @unique
+  genre  String
+  status String
+
+  publicationDate DateTime? @db.Date
+
+  // Pricing and royalties
+  mrp                 Decimal? @db.Decimal(10, 2)
+  authorRoyaltyPerCopy Decimal? @db.Decimal(10, 2)
+
+  totalCopiesSold    Int     @default(0)
+  totalRoyaltyEarned Decimal @default(0) @db.Decimal(12, 2)
+  royaltyPaid        Decimal @default(0) @db.Decimal(12, 2)
+  royaltyPending     Decimal @default(0) @db.Decimal(12, 2)
+
+  lastRoyaltyPayoutDate DateTime? @db.Date
+
+  printPartner String?
+  availableOn  String[] @default([])
+
+  // Author relationship
+  authorId String
+  author   User @relation(fields: [authorId], references: [id])
+
+  tickets Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+}
+
+// TICKET MODEL
+
+model Ticket {
+  id          String @id @default(uuid())
+  subject     String
+  description String
+
+  status   TicketStatus   @default(OPEN)
+  category TicketCategory @default(GENERAL_INQUIRY)
+  priority TicketPriority @default(MEDIUM)
+
+  // Tracks successful AI processing
+  aiProcessed Boolean @default(false)
+
+  // Author who raised the ticket
+  authorId String
+  author   User @relation("TicketAuthor", fields: [authorId], references: [id])
+
+  // book association
+  bookId String?
+  book   Book? @relation(fields: [bookId], references: [id])
+
+  // admin assignment
+  assignedToId String?
+  assignedTo   User? @relation("TicketAssignee", fields: [assignedToId], references: [id])
+
+  // Ticket conversation
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([status, priority])
+  @@index([category])
+  @@index([createdAt])
+  @@index([assignedToId])
+}
+
+
+// MESSAGE MODEL
+
+model Message {
+  id         String            @id @default(uuid())
+  body       String
+  visibility MessageVisibility @default(PUBLIC)
+
+  // Ticket relationship
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  // Sender relationship
+  senderId String
+  sender   User @relation(fields: [senderId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ticketId, createdAt])
+  @@index([senderId])
+}
