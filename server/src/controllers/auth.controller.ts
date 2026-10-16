@@ -1,5 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { registerAuthor, loginAuthor } from "../services/auth.service.js";
+import prisma from "../lib/prisma.js";
+import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 
 export const register = async (
   req: Request,
@@ -68,6 +70,67 @@ export const login = async (
       return;
     }
 
+    next(error);
+  }
+};
+
+export const logout = (
+  _req: Request,
+  res: Response,
+) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logout successful",
+  });
+};
+
+export const getCurrentUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        city: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { user },
+    });
+  } catch (error) {
     next(error);
   }
 };
