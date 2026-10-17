@@ -1,6 +1,7 @@
 import prisma from "../lib/prisma.js";
 import { Prisma, TicketStatus, TicketCategory, TicketPriority } from "../generated/prisma/client.js";
 import type { CreateTicketInput, AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
+import { classifyTicket } from "./ai.service.js";
 
 export const createTicket = async (
   authorId: string,
@@ -23,6 +24,26 @@ export const createTicket = async (
     }
   }
 
+  let category: TicketCategory = "GENERAL_INQUIRY";
+  let priority: TicketPriority = "MEDIUM";
+  let aiProcessed = false;
+
+  // AI Classification
+  try {
+    const classification = await classifyTicket(input.subject, input.description);
+
+    if (classification) {
+      category = classification.category;
+      priority = classification.priority;
+      aiProcessed = true
+    }
+  } catch (error) {
+    console.error("AI Classification failed:", error);
+  }
+
+
+
+
   // Create the ticket using the authenticated author's ID.
   return prisma.ticket.create({
     data: {
@@ -30,6 +51,9 @@ export const createTicket = async (
       description: input.description,
       authorId,
       bookId: input.bookId ?? null,
+      category,
+      priority,
+      aiProcessed,
     },
   });
 };
