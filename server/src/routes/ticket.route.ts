@@ -4,14 +4,17 @@ import {
   getAuthorTicketsHandler,
   getAuthorTicketByIdHandler,
   getAllTicketsHandler,
+  updateTicketHandler,
+  assignTicketHandler
 } from "../controllers/ticket.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { createTicketSchema, adminTicketQuerySchema } from "../validations/ticket.validation.js";
+import { createTicketSchema, adminTicketQuerySchema, updateTicketSchema } from "../validations/ticket.validation.js";
 import { createMessageSchema } from "../validations/message.validation.js";
 import { createAuthorMessageHandler } from "../controllers/message.controller.js";
 import { authorize } from "../middlewares/authorise.middleware.js";
 import { validateQuery } from "../middlewares/validateQuery.middleware.js";
+
 
 const router = Router();
 
@@ -23,11 +26,18 @@ router.post(
 );
 router.get("/", authenticate, getAuthorTicketsHandler);
 
-router.get("/admin/",
+router.get("/admin/all",
   authenticate,
   authorize,
   validateQuery(adminTicketQuerySchema),
   getAllTicketsHandler
+)
+
+router.patch("/admin/:id",
+    authenticate,
+    authorize,
+    validate(updateTicketSchema),
+    updateTicketHandler
 )
 
 router.get("/:id", authenticate, getAuthorTicketByIdHandler);
@@ -37,6 +47,14 @@ router.post("/:id/messages",
     validate(createMessageSchema),
     createAuthorMessageHandler
 )
+
+router.patch("/admin/:id/assign",
+  authenticate,
+  authorize,
+  assignTicketHandler
+)
+
+
 
 
 

@@ -1,7 +1,14 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
-import { createTicket, getAuthorTickets, getAuthorTicketById, getAllTickets } from "../services/ticket.service.js";
-import type { AdminTicketQuery } from "../validations/ticket.validation.js";
+import {
+  createTicket,
+  getAuthorTickets,
+  getAuthorTicketById,
+  getAllTickets,
+  updateTicket,
+  assignTicket,
+} from "../services/ticket.service.js";
+import type { AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
 
 export const createTicketHandler = async (
   req: AuthenticatedRequest,
@@ -122,6 +129,104 @@ export const getAllTicketsHandler = async (
       pagination: result.pagination,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const updateTicketHandler = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const ticketId = req.params.id;
+
+    if (!ticketId) {
+      res.status(400).json({
+        success: false,
+        message: "Ticket ID is required",
+      });
+      return;
+    }
+
+     if (typeof ticketId !== "string") {
+    res.status(400).json({
+        success: false,
+        message: "Invalid ticket ID",
+    });
+    return;
+    }
+
+    const input = req.body as UpdateTicketInput;
+
+    const ticket = await updateTicket(ticketId, input);
+
+    res.status(200).json({
+      success: true,
+      message: "Ticket updated successfully",
+      data: ticket,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "TICKET_NOT_FOUND") {
+      res.status(404).json({
+        success: false,
+        message: "Ticket not found",
+      });
+      return;
+    }
+
+    next(error);
+  }
+};
+
+export const assignTicketHandler = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+      return;
+    }
+    const ticketId = req.params.id;
+
+    if (!ticketId) {
+      res.status(400).json({
+        success: false,
+        message: "Ticket ID is required",
+      });
+      return;
+    }
+
+    if (typeof ticketId !== "string") {
+      res.status(400).json({
+        success: false,
+        message: "Invalid ticket ID",
+      });
+      return;
+    }
+
+    const ticket = await assignTicket(ticketId, req.user.userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Ticket assigned successfully",
+      data: ticket,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "TICKET_NOT_FOUND") {
+      res.status(404).json({
+        success: false,
+        message: "Ticket not found",
+      });
+      return;
+    }
+    
     next(error);
   }
 };

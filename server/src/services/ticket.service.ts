@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma.js";
 import { Prisma, TicketStatus, TicketCategory, TicketPriority } from "../generated/prisma/client.js";
-import type { CreateTicketInput, AdminTicketQuery } from "../validations/ticket.validation.js";
+import type { CreateTicketInput, AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
 
 export const createTicket = async (
   authorId: string,
@@ -153,4 +153,77 @@ export const getAllTickets = async (filters: AdminTicketQuery) => {
       totalPages: Math.ceil(total / limit),
     },
   };
+};
+
+export const updateTicket = async (
+  ticketId: string,
+  input: UpdateTicketInput,
+) => {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    select: { id: true },
+  });
+
+  if (!ticket) {
+    throw new Error("TICKET_NOT_FOUND");
+  }
+
+  const data: Prisma.TicketUpdateInput = {};
+  if (input.status !== undefined) data.status = input.status;
+  if (input.priority !== undefined) data.priority = input.priority;
+  if (input.category !== undefined) data.category = input.category;
+
+  return prisma.ticket.update({
+    where: { id: ticketId },
+    data,
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      book: {
+        select: {
+          id: true,
+          title: true,
+          isbn: true,
+        },
+      },
+    },
+  });
+};
+
+export const assignTicket = async (
+  ticketId: string,
+  adminId: string,
+) => {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    select: {
+      id: true,
+      assignedToId: true,
+    },
+  });
+
+  if (!ticket) {
+    throw new Error("TICKET_NOT_FOUND");
+  }
+
+  return prisma.ticket.update({
+    where: { id: ticketId },
+    data: {
+      assignedToId: adminId,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
 };
