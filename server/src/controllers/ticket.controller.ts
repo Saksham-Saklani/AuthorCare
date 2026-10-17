@@ -1,6 +1,7 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
-import { createTicket, getAuthorTickets, getAuthorTicketById } from "../services/ticket.service.js";
+import { createTicket, getAuthorTickets, getAuthorTicketById, getAllTickets } from "../services/ticket.service.js";
+import type { AdminTicketQuery } from "../validations/ticket.validation.js";
 
 export const createTicketHandler = async (
   req: AuthenticatedRequest,
@@ -99,6 +100,26 @@ export const getAuthorTicketByIdHandler = async (
     res.status(200).json({
       success: true,
       data: { ticket },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllTicketsHandler = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const query = res.locals.validatedQuery as AdminTicketQuery;
+
+    const result = await getAllTickets(query);
+
+    res.status(200).json({
+      success: true,
+      data: result.tickets,
+      pagination: result.pagination,
     });
   } catch (error) {
     next(error);
