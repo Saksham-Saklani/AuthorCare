@@ -1,7 +1,8 @@
 import prisma from "../lib/prisma.js";
 import { Prisma, TicketStatus, TicketCategory, TicketPriority } from "../generated/prisma/client.js";
 import type { CreateTicketInput, AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
-import { classifyTicket } from "./ai.service.js";
+import { classifyTicket, generateAiReply } from "./ai.service.js";
+import { conversationHistory } from "./message.service.js";
 
 export const createTicket = async (
   authorId: string,
@@ -251,3 +252,78 @@ export const assignTicket = async (
     },
   });
 };
+
+export const generateTicketReply = async (ticketId: string) => {
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    select: {
+      id: true,
+      subject: true,
+      description: true,
+      category: true,
+      authorId: true,
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          senderId: true,
+        },
+      },
+    },
+  });
+
+  if (!ticket) {
+    throw new Error("TICKET_NOT_FOUND");
+  }
+
+  const latestMessage = ticket.messages[0];
+
+  if (latestMessage && latestMessage.senderId !== ticket.authorId) {
+    return {
+      ticketId: ticket.id,
+      draft: null,
+      message: "The latest message was not sent by the author.",
+    };
+  }
+
+  const messageHistory = await conversationHistory(ticketId);
+
+  const draft = await generateAiReply({
+    subject: ticket.subject,
+    description: ticket.description,
+    category: ticket.category,
+    messageHistory,
+  });
+
+  return {
+    ticketId: ticket.id,
+    draft,
+  };
+};
+
+export const getAdminTicketById = async (
+  ticketId: string,
+) => {
+  return prisma.ticket.findFirst({
+    where: {
+      id: ticketId,
+    },
+    include: {
+      book: {
+        select: {
+          id: true,
+          title: true,
+          isbn: true,
+        },
+      },
+      messages: {
+        orderBy: {
+          createdAt: "asc",
+        },
+      },
+    },
+  });
+};
+
+
+

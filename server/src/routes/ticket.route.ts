@@ -5,13 +5,15 @@ import {
   getAuthorTicketByIdHandler,
   getAllTicketsHandler,
   updateTicketHandler,
-  assignTicketHandler
+  assignTicketHandler,
+  generateTicketReplyHandler,
+  getAdminTicketByIdHandler
 } from "../controllers/ticket.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { createTicketSchema, adminTicketQuerySchema, updateTicketSchema } from "../validations/ticket.validation.js";
-import { createMessageSchema } from "../validations/message.validation.js";
-import { createAuthorMessageHandler } from "../controllers/message.controller.js";
+import { adminMessageSchema, createMessageSchema } from "../validations/message.validation.js";
+import { createAuthorMessageHandler, sendAdminMessageHandler } from "../controllers/message.controller.js";
 import { authorize } from "../middlewares/authorise.middleware.js";
 import { validateQuery } from "../middlewares/validateQuery.middleware.js";
 
@@ -41,6 +43,7 @@ router.patch("/admin/:id",
 )
 
 router.get("/:id", authenticate, getAuthorTicketByIdHandler);
+router.get("/admin/:id", authenticate, authorize, getAdminTicketByIdHandler);
 
 router.post("/:id/messages",
     authenticate,
@@ -52,6 +55,19 @@ router.patch("/admin/:id/assign",
   authenticate,
   authorize,
   assignTicketHandler
+)
+
+router.post("/admin/:id/ai-draft",
+    authenticate,
+    authorize,
+    generateTicketReplyHandler
+)
+
+router.post("/admin/:id/messages",
+    authenticate,
+    authorize,
+    validate(adminMessageSchema),
+    sendAdminMessageHandler
 )
 
 

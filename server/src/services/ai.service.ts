@@ -4,6 +4,14 @@ import type {
   TicketPriority,
 } from "../generated/prisma/client.js";
 import { z } from "zod";
+import { getRelevantPolicies } from "./data.service.js";
+
+type draftInput = {
+    subject: string,
+    description: string,
+    category: TicketCategory,
+    messageHistory?: string,
+}
 
 const categories = [
   "ROYALTY_PAYMENTS",
@@ -99,4 +107,54 @@ Ticket description: ${description}
     category: result.category,
     priority: result.priority,
   };
+};
+
+export const generateAiReply = async (input: draftInput): Promise<string> => {
+  const { subject, description, category, messageHistory } = input;
+
+  const policy = getRelevantPolicies(category);
+
+  const interaction = await ai.interactions.create({
+    model: "gemini-3.8-flash",
+
+    input: `
+You are a support representative for BookLeaf, a book publishing platform.
+
+Your task is to draft a response to an author's support ticket.
+
+BOOKLEAF COMMUNICATION GUIDELINES:
+- Be empathetic and professional; treat authors as partners.
+- Acknowledge the author's concern before offering solutions.
+- Take responsibility for BookLeaf's mistakes without deflecting blame.
+- For escalations, provide a clear, policy-supported timeline.
+- End with an actionable next step for the author and/or BookLeaf team.
+- Never invent facts, promise unconfirmed actions, or give vague reassurances.
+
+Return only the proposed reply.
+
+BOOKLEAF KNOWLEDGE BASE:
+${policy}
+
+TICKET SUBJECT:
+${subject}
+
+TICKET DESCRIPTION:
+${description}
+
+CONVERSATION HISTORY:
+${messageHistory}
+
+Draft a suitable response for the author.
+`,
+
+  });
+
+  const draft = interaction.output_text?.trim();
+  console.log(draft)
+
+  if (!draft) {
+    throw new Error("AI_REPLY_DRAFT_FAILED");
+  }
+
+  return draft;
 };
