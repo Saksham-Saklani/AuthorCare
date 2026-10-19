@@ -1,0 +1,117 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
+
+export default function RegisterPage() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await register({
+        name,
+        email,
+        password,
+        city: city || undefined,
+        phone: phone || undefined,
+      });
+
+      navigate("/author", { replace: true });
+    } catch (err) {
+      setError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || "Registration failed."
+          : "Something went wrong.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow"
+      >
+        <h1 className="text-2xl font-bold">Create an account</h1>
+        <p className="text-sm text-gray-500">Register with AuthorCare</p>
+
+        <input
+          type="text"
+          placeholder="Name*"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          minLength={2}
+          className="w-full rounded border p-3"
+        />
+
+        <input
+          type="email"
+          placeholder="Email address*"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full rounded border p-3"
+        />
+
+        <input
+          type="password"
+          placeholder="Password*"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={8}
+          className="w-full rounded border p-3"
+        />
+
+        <input
+          type="text"
+          placeholder="City"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="w-full rounded border p-3"
+        />
+
+        <input
+          type="tel"
+          placeholder="Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full rounded border p-3"
+        />
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded bg-indigo-600 p-3 text-white hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {loading ? "Creating account..." : "Register"}
+        </button>
+
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-600 hover:underline">
+            Sign in
+          </Link>
+        </p>
+      </form>
+    </div>
+  );
+}
