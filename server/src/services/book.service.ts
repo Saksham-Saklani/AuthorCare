@@ -10,3 +10,19 @@ export const getAuthorBooks = async (authorId: string) => {
     },
   });
 };
+
+export const getBookById = async(bookId: string) => {
+    return prisma.book.findUnique({
+        where: {
+            id: bookId,
+        },
+        include: {
+            author:{
+                select:{
+                    name: true,
+                    email: true
+                }
+            }
+        }
+    });
+};  
