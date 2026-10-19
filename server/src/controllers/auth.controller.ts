@@ -57,7 +57,7 @@ export const login = async (
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
       res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: "Invalid password",
       });
       return;
     }
