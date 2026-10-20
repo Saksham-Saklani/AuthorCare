@@ -150,7 +150,6 @@ Draft a suitable response for the author.
   });
 
   const draft = interaction.output_text?.trim();
-  console.log(draft)
 
   if (!draft) {
     throw new Error("AI_REPLY_DRAFT_FAILED");

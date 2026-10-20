@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import api from "../../services/api";
+import socket from "../../lib/socket";
 
 interface TicketMessage {
   id: string;
@@ -92,6 +93,39 @@ const [replyError, setReplyError] = useState("");
     };
 
     void fetchTicket();
+
+    const handleTicketUpdated = (data: { ticketId: string }) => {
+      if (data.ticketId === ticketId) {
+        void fetchTicket();
+      }
+    };
+
+    socket.on("ticket:updated", handleTicketUpdated);
+
+    return () => {
+      socket.off("ticket:updated", handleTicketUpdated);
+    };
+  }, [ticketId]);
+
+  useEffect(() => {
+    if (!ticketId) return;
+
+    const subscribe = () => {
+      socket.emit("ticket:subscribe", ticketId);
+    };
+
+    if (socket.connected) {
+      subscribe();
+    }
+
+    socket.on("connect", subscribe);
+    socket.on("reconnect", subscribe);
+
+    return () => {
+      socket.off("connect", subscribe);
+      socket.off("reconnect", subscribe);
+      socket.emit("ticket:unsubscribe", ticketId);
+    };
   }, [ticketId]);
 
   const handleSendMessage = async (event: React.SyntheticEvent<HTMLFormElement>) => {

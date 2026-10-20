@@ -57,7 +57,7 @@ router.patch("/admin/:id/assign",
   assignTicketHandler
 )
 
-router.post("/admin/:id/ai-draft",
+router.post("/admin/:id/ai-drat",
     authenticate,
     authorize,
     generateTicketReplyHandler

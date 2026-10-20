@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import { emitTicketUpdated } from "../utils/socket.js";
 
 export const createAuthorMessage = async (
   ticketId: string,
@@ -46,7 +47,7 @@ export const sendAdminMessage = async (
     throw new Error("TICKET_NOT_FOUND");
   }
 
-  return prisma.message.create({
+  const message = await prisma.message.create({
     data: {
       body,
       ticketId: ticket.id,
@@ -54,6 +55,9 @@ export const sendAdminMessage = async (
       visibility,
     },
   });
+  
+  emitTicketUpdated(ticketId);
+  return message;
 };
 
 export const conversationHistory = async (ticketId: string) => {

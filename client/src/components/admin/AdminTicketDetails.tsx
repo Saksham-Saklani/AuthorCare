@@ -5,6 +5,7 @@ import { ArrowLeft, LoaderCircle } from "lucide-react";
 import api from "../../services/api";
 import ReplyComposer from "./ReplyComposer";
 import UpdateTicket from "./UpdateTicket";
+import socket from "../../lib/socket";
 
 type TicketCategory =
   | "ROYALTY_PAYMENTS"
@@ -61,11 +62,15 @@ export default function AdminTicketDetails() {
   const [error, setError] = useState("");
 
   const refreshTicket = async () => {
-      if (!ticketId) return;
+    if (!ticketId) return;
 
+    try {
       const response = await api.get(`/tickets/admin/${ticketId}`);
       setTicket(response.data.data.ticket);
-    };
+    } catch (err) {
+      console.error("[AdminTicketDetails] Failed to refresh ticket:", err);
+    }
+  };
 
   useEffect(() => {
     if (!ticketId) {
@@ -73,8 +78,6 @@ export default function AdminTicketDetails() {
       setLoading(false);
       return;
     }
-
-    
 
     const fetchTicket = async () => {
       try {
@@ -99,6 +102,34 @@ export default function AdminTicketDetails() {
     };
 
     void fetchTicket();
+  }, [ticketId]);
+
+  useEffect(() => {
+    if (!ticketId) return;
+
+    const handleTicketUpdated = (data: { ticketId: string }) => {
+      if (data.ticketId === ticketId) {
+        void refreshTicket();
+      }
+    };
+
+    const subscribe = () => {
+      socket.emit("ticket:subscribe", ticketId);
+    };
+
+    if (socket.connected) {
+      subscribe();
+    }
+
+    socket.on("connect", subscribe);
+    socket.on("reconnect", subscribe);
+    socket.on("ticket:updated", handleTicketUpdated);
+
+    return () => {
+      socket.off("connect", subscribe);
+      socket.off("reconnect", subscribe);
+      socket.off("ticket:updated", handleTicketUpdated);
+    };
   }, [ticketId]);
 
   const formatDate = (date: string) =>
@@ -237,12 +268,12 @@ export default function AdminTicketDetails() {
         </section>
 
         <UpdateTicket
-  ticketId={ticket.id}
-  status={ticket.status}
-  priority={ticket.priority}
-  category={ticket.category as TicketCategory}
-  onUpdated={refreshTicket}
-/>
+          ticketId={ticket.id}
+          status={ticket.status}
+          priority={ticket.priority}
+          category={ticket.category as TicketCategory}
+          onUpdated={refreshTicket}
+        />
 
         <section className="mt-8 border-t border-slate-100 pt-6">
           <h2 className="text-sm font-semibold text-slate-900">
@@ -299,9 +330,8 @@ export default function AdminTicketDetails() {
             </div>
           )}
         </section>
-        
       </div>
-      <ReplyComposer ticketId={ticket.id} onMessageSent={refreshTicket}/>
+      <ReplyComposer ticketId={ticket.id} onMessageSent={refreshTicket} />
     </div>
   );
 }

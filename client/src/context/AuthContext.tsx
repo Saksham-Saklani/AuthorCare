@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import api from "../services/api";
+import socket from "../lib/socket";
 
 export type UserRole = "AUTHOR" | "ADMIN";
 
@@ -50,6 +51,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void fetchCurrentUser();
   }, []);
+
+useEffect(() => {
+  if (loading || !user) {
+    socket.disconnect();
+    return;
+  }
+
+  const handleConnect = () => {
+    console.log("Socket connected:", socket.id);
+  };
+
+  const handleConnectError = (error: Error) => {
+    console.error("Socket connection failed:", error.message);
+  };
+
+  socket.on("connect", handleConnect);
+  socket.on("connect_error", handleConnectError);
+
+  socket.connect();
+
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.off("connect_error", handleConnectError);
+    socket.disconnect();
+  };
+}, [user, loading]);
 
   const register = async (data: {
   name: string;

@@ -3,6 +3,7 @@ import { Prisma, TicketStatus, TicketCategory, TicketPriority } from "../generat
 import type { CreateTicketInput, AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
 import { classifyTicket, generateAiReply } from "./ai.service.js";
 import { conversationHistory } from "./message.service.js";
+import {io} from "../lib/socket.js";
 
 export const createTicket = async (
   authorId: string,
@@ -46,17 +47,24 @@ export const createTicket = async (
 
 
   // Create the ticket using the authenticated author's ID.
-  return prisma.ticket.create({
-    data: {
-      subject: input.subject,
-      description: input.description,
-      authorId,
-      bookId: input.bookId ?? null,
-      category,
-      priority,
-      aiProcessed,
-    },
-  });
+const ticket = await prisma.ticket.create({
+  data: {
+    subject: input.subject,
+    description: input.description,
+    authorId,
+    bookId: input.bookId ?? null,
+    category,
+    priority,
+    aiProcessed,
+  },
+});
+
+// Notify connected admins about the new ticket.
+io.to("admins").emit("ticket:created", {
+  ticketId: ticket.id,
+});
+
+return ticket;
 };
 
 export const getAuthorTickets = async (authorId: string) => {

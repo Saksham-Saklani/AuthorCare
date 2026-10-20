@@ -11,6 +11,7 @@ import {
   getAdminTicketById,
 } from "../services/ticket.service.js";
 import type { AdminTicketQuery, UpdateTicketInput } from "../validations/ticket.validation.js";
+import { emitTicketUpdated } from "../utils/socket.js";
 
 export const createTicketHandler = async (
   req: AuthenticatedRequest,
@@ -162,6 +163,7 @@ export const updateTicketHandler = async (
     const input = req.body as UpdateTicketInput;
 
     const ticket = await updateTicket(ticketId, input);
+    emitTicketUpdated(ticketId);
 
     res.status(200).json({
       success: true,
@@ -214,6 +216,7 @@ export const assignTicketHandler = async (
     }
 
     const ticket = await assignTicket(ticketId, req.user.userId);
+    emitTicketUpdated(ticketId);
 
     res.status(200).json({
       success: true,

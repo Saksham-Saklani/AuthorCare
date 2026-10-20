@@ -1,6 +1,7 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../middlewares/auth.middleware.js";
 import { createAuthorMessage, sendAdminMessage } from "../services/message.service.js";
+import { emitTicketUpdated } from "../utils/socket.js";
 
 export const createAuthorMessageHandler = async (
   req: AuthenticatedRequest,
@@ -31,6 +32,8 @@ export const createAuthorMessageHandler = async (
       req.user.userId,
       req.body.body,
     );
+
+    emitTicketUpdated(ticketId);
 
     res.status(201).json({
       success: true,
@@ -83,6 +86,8 @@ export const sendAdminMessageHandler = async(
     }
 
     const ticket = await sendAdminMessage(ticketId, req.user.userId, req.body.body, req.body.visibility);
+
+    emitTicketUpdated(ticketId);
 
     res.status(200).json({
         success: true,
