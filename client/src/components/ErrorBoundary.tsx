@@ -47,7 +47,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             </p>
 
             {this.state.error && (
-              <p className="mt-3 rounded-lg bg-slate-100 p-2 text-xs font-mono text-slate-700 break-words">
+              <p className="mt-3 rounded-lg bg-slate-100 p-2 text-xs font-mono text-slate-700 wrap-break-word">
                 {this.state.error.message}
               </p>
             )}
