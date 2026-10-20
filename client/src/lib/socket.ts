@@ -9,6 +9,10 @@ const socketUrl =
 const socket = io(socketUrl, {
   withCredentials: true,
   autoConnect: false,
+  // auth is a callback so it always reads the freshest token on connect/reconnect
+  auth: (cb) => {
+    cb({ token: localStorage.getItem("token") ?? "" });
+  },
 });
 
 export default socket;

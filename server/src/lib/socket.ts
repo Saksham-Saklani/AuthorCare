@@ -15,11 +15,18 @@ export const initializeSocket = (server: import("node:http").Server) => {
 
   io.use((socket, next) => {
     try {
-      const token = socket.handshake.headers.cookie
-        ?.split(";")
-        .map((cookie) => cookie.trim())
-        .find((cookie) => cookie.startsWith("token="))
-        ?.slice("token=".length);
+      // 1. Handshake auth object (primary — sent by client via socket auth option)
+      // 2. Authorization header
+      // 3. Cookie fallback (same-site / local dev)
+      const authHeader = socket.handshake.headers.authorization;
+      const token: string | undefined =
+        socket.handshake.auth?.token ||
+        (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined) ||
+        socket.handshake.headers.cookie
+          ?.split(";")
+          .map((c) => c.trim())
+          .find((c) => c.startsWith("token="))
+          ?.slice("token=".length);
 
       if (!token || !process.env.JWT_SECRET) {
         return next(new Error("Authentication required"));
