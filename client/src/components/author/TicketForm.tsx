@@ -201,7 +201,7 @@ export default function TicketForm() {
             type="button"
             onClick={() => navigate("/author/tickets")}
             disabled={submitting}
-            className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
           >
             Cancel
           </button>
@@ -214,7 +214,7 @@ export default function TicketForm() {
               subject.trim().length < 3 ||
               description.trim().length < 10
             }
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
             <Send size={16} />
             {submitting ? "Submitting..." : "Submit Ticket"}

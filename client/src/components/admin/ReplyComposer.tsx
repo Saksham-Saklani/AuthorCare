@@ -184,7 +184,7 @@ export default function ReplyComposer({
           type="button"
           onClick={handleSend}
           disabled={sending || generating || !body.trim()}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer ${
             mode === "INTERNAL"
               ? "bg-amber-600 hover:bg-amber-700"
               : "bg-indigo-600 hover:bg-indigo-700"

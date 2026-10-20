@@ -151,7 +151,7 @@ export default function UpdateTicket({
           type="button"
           onClick={handleAssignToMe}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 cursor-pointer"
         >
           <UserRoundCheck size={16} />
           Assign to Me

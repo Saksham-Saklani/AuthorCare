@@ -26,18 +26,32 @@ export const registerAuthor = async (input: RegisterInput) => {
       phone: input.phone ?? null,
       city: input.city ?? null,
     },
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    role: true,
-    phone: true,
-    city: true,
-    createdAt: true,
-  },
-});
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      phone: true,
+      city: true,
+      createdAt: true,
+    },
+  });
 
-  return user;
+  const token = jwt.sign(
+    {
+      userId: user.id,
+      role: user.role,
+    },
+    process.env.JWT_SECRET!,
+    {
+      expiresIn: "1d",
+    },
+  );
+
+  return {
+    token,
+    user,
+  };
 };
 
 

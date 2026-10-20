@@ -4,12 +4,13 @@ import type { CreateTicketInput, AdminTicketQuery, UpdateTicketInput } from "../
 import { classifyTicket, generateAiReply } from "./ai.service.js";
 import { conversationHistory } from "./message.service.js";
 import {io} from "../lib/socket.js";
+import { emitTicketUpdated } from "../utils/socket.js";
 
 export const createTicket = async (
   authorId: string,
   input: CreateTicketInput,
 ) => {
-  // If a book was selected, verify that it belongs to this author.
+  // 1. Verify that the selected book belongs to this author.
   if (input.bookId) {
     const book = await prisma.book.findFirst({
       where: {
@@ -26,45 +27,51 @@ export const createTicket = async (
     }
   }
 
-  let category: TicketCategory = "GENERAL_INQUIRY";
-  let priority: TicketPriority = "MEDIUM";
-  let aiProcessed = false;
+  // 2. Create the ticket immediately with default classification.
+  const ticket = await prisma.ticket.create({
+    data: {
+      subject: input.subject,
+      description: input.description,
+      authorId,
+      bookId: input.bookId ?? null,
+      category: "GENERAL_INQUIRY",
+      priority: "MEDIUM",
+      aiProcessed: false,
+    },
+  });
 
-  // AI Classification
-  try {
-    const classification = await classifyTicket(input.subject, input.description);
+  // 3. Notify connected admins that a ticket was created.
+  io.to("admins").emit("ticket:created", {
+    ticketId: ticket.id,
+  });
 
-    if (classification) {
-      category = classification.category;
-      priority = classification.priority;
-      aiProcessed = true
-    }
-  } catch (error) {
-    console.error("AI Classification failed:", error);
-  }
+  // 4. Classify in the background without delaying the response.
+  void classifyTicket(input.subject, input.description)
+    .then(async (classification) => {
+      if (!classification) {
+        return;
+      }
 
+      // 5. Save the AI classification.
+      await prisma.ticket.update({
+        where: {
+          id: ticket.id,
+        },
+        data: {
+          category: classification.category,
+          priority: classification.priority,
+          aiProcessed: true,
+        },
+      });
 
+      // 6. Notify clients viewing this ticket.
+      await emitTicketUpdated(ticket.id);
+    })
+    .catch((error) => {
+      console.error("Background AI classification failed:", error);
+    });
 
-
-  // Create the ticket using the authenticated author's ID.
-const ticket = await prisma.ticket.create({
-  data: {
-    subject: input.subject,
-    description: input.description,
-    authorId,
-    bookId: input.bookId ?? null,
-    category,
-    priority,
-    aiProcessed,
-  },
-});
-
-// Notify connected admins about the new ticket.
-io.to("admins").emit("ticket:created", {
-  ticketId: ticket.id,
-});
-
-return ticket;
+  return ticket;
 };
 
 export const getAuthorTickets = async (authorId: string) => {

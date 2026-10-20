@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import type { Book } from "../../types";
+import { LibraryBig, BadgeIndianRupee, RotateCwFadingClock,Ticket  } from "lucide-react";
 
 export default function AuthorDashboard() {
   const navigate = useNavigate();
@@ -88,7 +89,13 @@ export default function AuthorDashboard() {
           onClick={() => navigate("/author/books")}
           className="rounded-xl border border-slate-200 bg-white p-6 text-left transition hover:border-indigo-300 hover:shadow-sm"
         >
-          <p className="text-sm font-medium text-slate-500">My Books</p>
+          <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500">
+                  My Books
+                </p>
+                <LibraryBig size={24} className="text-indigo-600" />
+
+              </div>
 
           <p className="mt-3 text-3xl font-semibold">{books.length}</p>
 
@@ -100,7 +107,13 @@ export default function AuthorDashboard() {
         
 
         <div className="rounded-xl border border-slate-200 bg-white p-6">
-          <p className="text-sm font-medium text-slate-500">Royalties Earned</p>
+          <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500">
+                  Royalties Earned
+                </p>
+                <BadgeIndianRupee size={24} className="text-indigo-600" />
+
+              </div>
 
           <p className="mt-3 text-2xl font-semibold">
             {formatCurrency(totalRoyalties)}
@@ -112,9 +125,13 @@ export default function AuthorDashboard() {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6">
-          <p className="text-sm font-medium text-slate-500">
-            Pending Royalties
-          </p>
+           <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500">
+                  Pending Royalties
+                </p>
+                <RotateCwFadingClock size={24} className="text-indigo-600" />
+
+              </div>
 
           <p className="mt-3 text-2xl font-semibold">
             {formatCurrency(royaltiesPending)}
@@ -131,8 +148,13 @@ export default function AuthorDashboard() {
           onClick={() => navigate("/author/tickets")}
           className="rounded-xl border border-slate-200 bg-white p-6 text-left transition hover:border-indigo-300 hover:shadow-sm"
         >
-          <p className="text-sm font-medium text-slate-500">My Tickets</p>
+<div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500">
+                  My Tickets
+                </p>
+                <Ticket size={24} className="text-indigo-600" />
 
+              </div>
           <p className="mt-3 text-2xl font-semibold">{ticketCount}</p>
 
           <p className="mt-2 text-sm text-slate-500">

@@ -95,7 +95,7 @@ export default function AuthorTickets() {
 
         <button
           onClick={() => navigate("/author/tickets/new")}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 cursor-pointer"
         >
           <Plus size={16} />
           Create Ticket

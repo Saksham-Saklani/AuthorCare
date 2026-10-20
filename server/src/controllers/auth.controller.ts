@@ -9,12 +9,20 @@ export const register = async (
   next: NextFunction,
 ) => {
   try {
-    const user = await registerAuthor(req.body);
+    const result = await registerAuthor(req.body);
+
+    res.cookie("token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "PRODUCTION",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
+    });
 
     res.status(201).json({
       success: true,
       message: "Registration successful",
-      data: { user },
+      data: { user: result.user },
     });
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
