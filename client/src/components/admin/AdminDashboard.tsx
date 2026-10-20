@@ -4,6 +4,10 @@ import { Ticket, Clock, CircleAlert, CheckCircle2 } from "lucide-react";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
+type TicketFilter = Record<string, string>;
+
+
+
 interface TicketItem {
   id: string;
   status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
@@ -27,6 +31,7 @@ export default function AdminDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
 
   const navigate = useNavigate();
 
@@ -69,7 +74,13 @@ export default function AdminDashboard() {
     void fetchDashboardStats();
   }, []);
 
-  const cards = [
+const cards: {
+  label: string;
+  value: number;
+  icon: typeof Ticket;
+  description: string;
+  filter: TicketFilter;
+}[] = [
   {
     label: "Total Tickets",
     value: stats.total,

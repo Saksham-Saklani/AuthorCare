@@ -32,7 +32,7 @@ export default function AuthorBookDetails() {
         setError(
           typeof message === "string"
             ? message
-            : "Unable to load book details."
+            : "Unable to load book details.",
         );
       } finally {
         setLoading(false);
@@ -82,6 +82,8 @@ export default function AuthorBookDetails() {
     );
   }
 
+  const availableOn = book.availableOn ?? [];
+
   const details = [
     { label: "ISBN", value: book.isbn },
     { label: "Genre", value: book.genre },
@@ -95,13 +97,16 @@ export default function AuthorBookDetails() {
   ];
 
   const royaltyDetails = [
-    { label: "Copies Sold", value: book.totalCopiesSold.toLocaleString("en-IN") },
+    {
+      label: "Copies Sold",
+      value: book.totalCopiesSold.toLocaleString("en-IN"),
+    },
     { label: "Total Earned", value: formatCurrency(book.totalRoyaltyEarned) },
     { label: "Royalties Paid", value: formatCurrency(book.royaltyPaid) },
     { label: "Pending Royalties", value: formatCurrency(book.royaltyPending) },
     {
       label: "Last Royalty Payout",
-      value: formatDate(book.lastRoyaltyPayoutDate),
+      value: formatDate(book.lastRoyaltyPayoutDate ?? null),
     },
   ];
 
@@ -166,13 +171,13 @@ export default function AuthorBookDetails() {
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="font-semibold">Distribution</h2>
 
-        {book.availableOn.length === 0 ? (
+        {availableOn.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">
             No distribution platforms listed.
           </p>
         ) : (
           <div className="mt-4 flex flex-wrap gap-2">
-            {book.availableOn.map((platform) => (
+            {availableOn.map((platform) => (
               <span
                 key={platform}
                 className="rounded-full bg-slate-100 px-3 py-2 text-sm text-slate-700"
@@ -194,7 +199,9 @@ export default function AuthorBookDetails() {
 
         <button
           onClick={() =>
-            navigate(`/author/tickets/new?bookId=${encodeURIComponent(book.id)}`)
+            navigate(
+              `/author/tickets/new?bookId=${encodeURIComponent(book.id)}`,
+            )
           }
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700"
         >
