@@ -309,6 +309,12 @@ export const getAdminTicketById = async (
       id: ticketId,
     },
     include: {
+        author:{
+            select:{
+                name:true,
+                email:true,
+            }
+        },
       book: {
         select: {
           id: true,
