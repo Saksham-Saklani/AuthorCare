@@ -13,7 +13,7 @@ export const register = async (
 
     res.cookie("token", result.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "PRODUCTION",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
@@ -43,12 +43,11 @@ export const login = async (
   next: NextFunction,
 ) => {
   try {
-
     const result = await loginAuthor(req.body);
 
     res.cookie("token", result.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "PRODUCTION",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
@@ -82,13 +81,10 @@ export const login = async (
   }
 };
 
-export const logout = (
-  _req: Request,
-  res: Response,
-) => {
+export const logout = (_req: Request, res: Response) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "PRODUCTION",
+    secure: process.env.NODE_ENV === "production",
     sameSite: "none",
     path: "/",
   });
