@@ -68,7 +68,7 @@ these passwords for personal accounts.
 
   **Database:**                            PostgreSQL (Supabase in production)
 
-  **ORM:**                                 Prisma 7
+  **ORM:**                                 Prisma
 
   **Authentication:**                      JWT using an Authorization header,
                                       with cookie-based authentication as
@@ -140,9 +140,6 @@ CLIENT_URL="http://localhost:5173"
 NODE_ENV="development"
 ```
 
-Use your own local PostgreSQL connection string and secrets. Never
-commit `.env` files or real API keys.
-
 Apply the Prisma migrations:
 
 ``` bash
@@ -163,7 +160,7 @@ Start the backend:
 npm run dev
 ```
 
-The API should be available at `http://localhost:3000`.
+The API should be available at `http://authorcare-server.onrender.com/api`.
 
 ### 3. Configure the frontend
 
@@ -177,8 +174,8 @@ npm install
 Create `client/.env`:
 
 ``` env
-VITE_API_URL=http://localhost:3000/api
-VITE_SOCKET_URL=http://localhost:3000
+VITE_API_URL=http://authorcare.onrender.com/api
+VITE_SOCKET_URL=http://authorcare.onrender.com
 ```
 
 Start the frontend:
@@ -368,19 +365,22 @@ author-side updates.
 
 ## Known Limitations and Future Improvements
 
--   **UI/UX:** The frontend is functional, but the visual design and
-    usability could be refined.
--   **Real-time coverage:** Current real-time behavior focuses on ticket
-    status updates and admin replies for authors. More events and
-    notifications could be added.
--   **AI reply accuracy:** Reply drafts could be improved by retrieving
-    relevant, structured policy and account/book information from the
-    database rather than relying on a hardcoded knowledge base alone.
--   **Testing and observability:** Automated tests, structured
-    monitoring, and broader failure-path coverage would improve
-    confidence and maintainability.
+- **UI/UX and author dashboard:** Improve usability and surface publishing progress, royalty trends, recent activity, and actionable alerts based on available data.
+- **Grounded AI support:** Retrieve authorized book, royalty, and payment records for account-specific answers; cite supporting policies/data and escalate when evidence is incomplete.
+- **Smarter tickets:** Add image attachments for damaged-book or printing-defect reports, conversation summaries, duplicate detection, SLA tracking, and escalation rules.
+- **Knowledge management:** Replace the hardcoded knowledge base with editable, versioned documents and evaluate retrieval quality.
+- **Admin analytics:** Track ticket volume, response/resolution times, recurring issues, and AI classification/draft quality.
+- **Reliability and security:** Add automated API/authorization tests, centralized error handling, structured logging, monitoring, reliable Socket.IO reconnection, secure uploads, audit logs, rate limits, and backup/recovery procedures.
 
 ## Approach and Production Evolution
+
+- Prioritized the end-to-end workflow: author authentication and data access, ticket creation and communication, admin ticket management, and AI assistance.
+- Enforced role-based access and author data isolation on the backend.
+- Kept AI prompts focused by supplying relevant knowledge-base sections and the five most recent ticket messages; administrators review drafts before sending.
+- Allowed ticket creation to continue with default category and priority values when AI classification is unavailable.
+- To evolve the portal, I would first improve AI grounding with authorized database context, then improve the author dashboard and ticket workflow, and strengthen automated testing and operational reliability.
+- I would retain the current architecture initially and introduce background jobs or additional infrastructure only when justified by measured needs.
+
 
 The implementation prioritised a working end-to-end workflow: author
 access to book and royalty information, ticket submission and
