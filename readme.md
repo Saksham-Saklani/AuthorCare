@@ -150,14 +150,12 @@ npx prisma migrate deploy
 ```
 
 Seed the database using the seed command configured in the backend
-project. If the repository's package scripts define `seed`, run:
-
+project. ]
 ``` bash
-npm run seed
+npx tsx prisma/seed.ts
 ```
 
-If the seed command differs in your checkout, use the script configured
-by the project rather than assuming a command name.
+
 
 Start the backend:
 
