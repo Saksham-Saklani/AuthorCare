@@ -15,7 +15,10 @@ export const authenticate = (
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies?.token as string | undefined;
+  // Accept token from Authorization header (cross-origin) or cookie (same-site)
+  const authHeader = req.headers.authorization;
+  const token: string | undefined =
+    authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : req.cookies?.token;
 
   if (!token) {
     res.status(401).json({

@@ -72,7 +72,7 @@ useEffect(() => {
   };
 }, [user, loading]);
 
-  const register = async (data: {
+const register = async (data: {
   name: string;
   email: string;
   password: string;
@@ -81,20 +81,21 @@ useEffect(() => {
 }): Promise<User> => {
   const response = await api.post("/auth/register", data);
   const registeredUser = response.data.data.user as User;
+  const token = response.data.data.token as string | undefined;
+  if (token) localStorage.setItem("token", token);
 
   setUser(registeredUser);
   return registeredUser;
 };
 
   const login = async (email: string, password: string) => {
-    const response = await api.post("/auth/login", {
-      email,
-      password,
-    });
+    const response = await api.post("/auth/login", { email, password });
 
     const loggedInUser = response.data.data.user as User;
-    setUser(loggedInUser);
+    const token = response.data.data.token as string | undefined;
+    if (token) localStorage.setItem("token", token);
 
+    setUser(loggedInUser);
     return loggedInUser;
   };
 
@@ -102,6 +103,7 @@ useEffect(() => {
     try {
       await api.post("/auth/logout");
     } finally {
+      localStorage.removeItem("token");
       setUser(null);
     }
   };
