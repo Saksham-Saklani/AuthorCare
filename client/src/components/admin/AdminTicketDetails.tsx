@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
@@ -6,56 +6,12 @@ import api from "../../services/api";
 import ReplyComposer from "./ReplyComposer";
 import UpdateTicket from "./UpdateTicket";
 import socket from "../../lib/socket";
-
-type TicketCategory =
-  | "ROYALTY_PAYMENTS"
-  | "ISBN_METADATA_ISSUES"
-  | "PRINTING_QUALITY"
-  | "DISTRIBUTION_AVAILABILITY"
-  | "BOOK_STATUS_PRODUCTION"
-  | "GENERAL_INQUIRY";
-
-interface AdminUser {
-  id?: string;
-  name: string;
-  email: string;
-}
-
-interface Book {
-  id: string;
-  title: string;
-  isbn: string;
-}
-
-interface TicketMessage {
-  id: string;
-  body: string;
-  visibility: "PUBLIC" | "INTERNAL";
-  senderId: string;
-  createdAt: string;
-}
-
-interface Ticket {
-  id: string;
-  subject: string;
-  description: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-  category: string;
-  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  aiProcessed: boolean;
-  authorId: string;
-  bookId: string | null;
-  assignedToId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  author: AdminUser;
-  book: Book | null;
-  messages: TicketMessage[];
-}
+import type { Ticket, TicketCategory } from "../../types";
 
 export default function AdminTicketDetails() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,15 +78,20 @@ export default function AdminTicketDetails() {
     }
 
     socket.on("connect", subscribe);
-    socket.on("reconnect", subscribe);
     socket.on("ticket:updated", handleTicketUpdated);
 
     return () => {
       socket.off("connect", subscribe);
-      socket.off("reconnect", subscribe);
       socket.off("ticket:updated", handleTicketUpdated);
+      socket.emit("ticket:unsubscribe", ticketId);
     };
   }, [ticketId]);
+
+  useEffect(() => {
+    if (ticket?.messages?.length) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [ticket?.messages?.length]);
 
   const formatDate = (date: string) =>
     new Intl.DateTimeFormat("en-IN", {
@@ -327,6 +288,7 @@ export default function AdminTicketDetails() {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
           )}
         </section>

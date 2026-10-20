@@ -2,17 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
-
-interface Book {
-  id: string;
-  title: string;
-  isbn: string;
-  genre: string;
-  publicationDate: string;
-  status: string;
-  totalCopiesSold: number;
-  totalRoyaltyEarned: string | number;
-}
+import type { Book } from "../../types";
 
 export default function AuthorBooks() {
   const navigate = useNavigate();

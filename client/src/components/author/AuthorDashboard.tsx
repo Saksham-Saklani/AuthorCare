@@ -2,17 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-
-interface Book {
-  id: string;
-  title: string;
-  isbn: string;
-  status: string;
-  totalCopiesSold: number;
-  totalRoyaltyEarned: string | number;
-  royaltyPaid: string | number;
-  royaltyPending: string | number;
-}
+import type { Book } from "../../types";
 
 export default function AuthorDashboard() {
   const navigate = useNavigate();

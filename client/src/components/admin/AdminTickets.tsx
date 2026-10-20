@@ -1,30 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import api from "../../services/api";
-import { useSearchParams } from "react-router-dom";
-
-interface Ticket {
-  id: string;
-  subject: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-  category: string;
-  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  aiProcessed: boolean;
-  createdAt: string;
-  assignedToId: string | null;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  book: {
-    id: string;
-    title: string;
-    isbn: string;
-  } | null;
-}
+import type { Ticket } from "../../types";
 
 interface Pagination {
   page: number;
@@ -84,15 +63,41 @@ export default function AdminTickets() {
     totalPages: 1,
   });
 
-const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-const [status, setStatus] = useState(searchParams.get("status") ?? "");
-const [category, setCategory] = useState(searchParams.get("category") ?? "");
-const [priority, setPriority] = useState(searchParams.get("priority") ?? "");
-  const [page, setPage] = useState(1);
+  const status = searchParams.get("status") ?? "";
+  const category = searchParams.get("category") ?? "";
+  const priority = searchParams.get("priority") ?? "";
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const updateFilter = (key: string, value: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      next.delete("page");
+      return next;
+    });
+  };
+
+  const setPage = (nextPage: number | ((current: number) => number)) => {
+    const computed = typeof nextPage === "function" ? nextPage(page) : nextPage;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (computed > 1) {
+        next.set("page", String(computed));
+      } else {
+        next.delete("page");
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -131,10 +136,7 @@ const [priority, setPriority] = useState(searchParams.get("priority") ?? "");
   }, [status, category, priority, page]);
 
   const resetFilters = () => {
-    setStatus("");
-    setCategory("");
-    setPriority("");
-    setPage(1);
+    setSearchParams(new URLSearchParams());
   };
 
   return (
@@ -166,10 +168,7 @@ const [priority, setPriority] = useState(searchParams.get("priority") ?? "");
             <select
               id="status"
               value={status}
-              onChange={(event) => {
-                setStatus(event.target.value);
-                setPage(1);
-              }}
+              onChange={(event) => updateFilter("status", event.target.value)}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
             >
               <option value="">Select</option>
@@ -190,10 +189,7 @@ const [priority, setPriority] = useState(searchParams.get("priority") ?? "");
             <select
               id="category"
               value={category}
-              onChange={(event) => {
-                setCategory(event.target.value);
-                setPage(1);
-              }}
+              onChange={(event) => updateFilter("category", event.target.value)}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
             >
               <option value="">Select</option>
@@ -215,10 +211,7 @@ const [priority, setPriority] = useState(searchParams.get("priority") ?? "");
             <select
               id="priority"
               value={priority}
-              onChange={(event) => {
-                setPriority(event.target.value);
-                setPage(1);
-              }}
+              onChange={(event) => updateFilter("priority", event.target.value)}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
             >
               <option value="">Select</option>

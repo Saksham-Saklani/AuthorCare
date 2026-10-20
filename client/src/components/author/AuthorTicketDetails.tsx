@@ -1,35 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import api from "../../services/api";
 import socket from "../../lib/socket";
-
-interface TicketMessage {
-  id: string;
-  body: string;
-  visibility: "PUBLIC";
-  senderId: string;
-  createdAt: string;
-}
-
-interface Ticket {
-  id: string;
-  subject: string;
-  description: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-  category: string;
-  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  createdAt: string;
-  updatedAt: string;
-  authorId: string;
-  book: {
-    id: string;
-    title: string;
-    isbn: string;
-  } | null;
-  messages: TicketMessage[];
-}
+import type { Ticket } from "../../types";
 
 const statusStyles: Record<Ticket["status"], string> = {
   OPEN: "bg-blue-50 text-blue-700",
@@ -58,6 +33,7 @@ const formatDate = (date: string) =>
 export default function AuthorTicketDetails() {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,14 +95,18 @@ const [replyError, setReplyError] = useState("");
     }
 
     socket.on("connect", subscribe);
-    socket.on("reconnect", subscribe);
 
     return () => {
       socket.off("connect", subscribe);
-      socket.off("reconnect", subscribe);
       socket.emit("ticket:unsubscribe", ticketId);
     };
   }, [ticketId]);
+
+  useEffect(() => {
+    if (ticket?.messages?.length) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [ticket?.messages?.length]);
 
   const handleSendMessage = async (event: React.SyntheticEvent<HTMLFormElement>) => {
   event.preventDefault();
@@ -316,6 +296,7 @@ const [replyError, setReplyError] = useState("");
               </div>
             );
           })}
+          <div ref={messagesEndRef} />
         </div>
       </section>
 

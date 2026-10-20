@@ -3,20 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Plus, Ticket as TicketIcon } from "lucide-react";
 import api from "../../services/api";
-
-interface Ticket {
-  id: string;
-  subject: string;
-  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-  category: string;
-  priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-  createdAt: string;
-  book: {
-    id: string;
-    title: string;
-    isbn: string;
-  } | null;
-}
+import type { Ticket } from "../../types";
 
 const statusStyles: Record<Ticket["status"], string> = {
   OPEN: "bg-blue-50 text-blue-700",

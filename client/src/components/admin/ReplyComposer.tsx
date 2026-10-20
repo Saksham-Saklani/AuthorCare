@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { Sparkles, Send, Lock, MessageSquare } from "lucide-react";
 import api from "../../services/api";
@@ -92,43 +92,6 @@ export default function ReplyComposer({
       setSending(false);
     }
   };
-
-  useEffect(() => {
-  const generateInitialDraft = async () => {
-    setGenerating(true);
-    setError("");
-
-    try {
-      const response = await api.post(
-        `/tickets/admin/${ticketId}/ai-draft`,
-      );
-
-      const draft = response.data.data?.draft;
-
-      if (typeof draft !== "string" || !draft.trim()) {
-        throw new Error("No draft was returned by the AI service.");
-      }
-
-      setBody(draft);
-    } catch (err) {
-      const message = axios.isAxiosError(err)
-        ? err.response?.data?.message
-        : err instanceof Error
-          ? err.message
-          : undefined;
-
-      setError(
-        typeof message === "string"
-          ? message
-          : "Unable to generate an AI draft. You can write a reply manually.",
-      );
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  void generateInitialDraft();
-}, [ticketId]);
 
   return (
     <section className="mt-8 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

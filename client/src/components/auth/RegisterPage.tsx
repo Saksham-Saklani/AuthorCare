@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 
@@ -10,6 +11,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
@@ -22,11 +24,11 @@ export default function RegisterPage() {
 
     try {
       await register({
-        name,
-        email,
-        password,
-        city: city || undefined,
-        phone: phone || undefined,
+        name: name.trim(),
+        email: email.trim(),
+        password: password.trim(),
+        city: city.trim() || undefined,
+        phone: phone.trim() || undefined,
       });
 
       navigate("/author", { replace: true });
@@ -57,7 +59,7 @@ export default function RegisterPage() {
           onChange={(e) => setName(e.target.value)}
           required
           minLength={2}
-          className="w-full rounded border p-3"
+          className="w-full rounded border p-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
 
         <input
@@ -66,25 +68,35 @@ export default function RegisterPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full rounded border p-3"
+          className="w-full rounded border p-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
 
-        <input
-          type="password"
-          placeholder="Password*"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          className="w-full rounded border p-3"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password*"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            className="w-full rounded border p-3 pr-10 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         <input
           type="text"
           placeholder="City"
           value={city}
           onChange={(e) => setCity(e.target.value)}
-          className="w-full rounded border p-3"
+          className="w-full rounded border p-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
 
         <input
@@ -92,7 +104,7 @@ export default function RegisterPage() {
           placeholder="Phone"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded border p-3"
+          className="w-full rounded border p-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}

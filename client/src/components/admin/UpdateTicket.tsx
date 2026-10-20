@@ -1,19 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Check, UserRoundCheck } from "lucide-react";
 import api from "../../services/api";
-
-type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-
-type TicketPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-
-type TicketCategory =
-  | "ROYALTY_PAYMENTS"
-  | "ISBN_METADATA_ISSUES"
-  | "PRINTING_QUALITY"
-  | "DISTRIBUTION_AVAILABILITY"
-  | "BOOK_STATUS_PRODUCTION"
-  | "GENERAL_INQUIRY";
+import type { TicketStatus, TicketPriority, TicketCategory } from "../../types";
 
 interface AdminTicketControlsProps {
   ticketId: string;
@@ -65,6 +54,18 @@ export default function UpdateTicket({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    setNewStatus(status);
+  }, [status]);
+
+  useEffect(() => {
+    setNewPriority(priority);
+  }, [priority]);
+
+  useEffect(() => {
+    setNewCategory(category);
+  }, [category]);
 
   const hasChanges =
     newStatus !== status ||

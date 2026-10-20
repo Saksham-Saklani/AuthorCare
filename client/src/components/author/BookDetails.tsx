@@ -3,24 +3,7 @@ import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import api from "../../services/api";
-
-interface Book {
-  id: string;
-  title: string;
-  isbn: string;
-  genre: string;
-  status: string;
-  publicationDate: string;
-  mrp: string | number;
-  authorRoyaltyPerCopy: string | number;
-  totalCopiesSold: number;
-  totalRoyaltyEarned: string | number;
-  royaltyPaid: string | number;
-  royaltyPending: string | number;
-  lastRoyaltyPayoutDate: string | null;
-  printPartner: string | null;
-  availableOn: string[];
-}
+import type { Book } from "../../types";
 
 export default function AuthorBookDetails() {
   const { bookId } = useParams<{ bookId: string }>();

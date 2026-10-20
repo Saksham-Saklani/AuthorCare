@@ -3,12 +3,9 @@ import axios from "axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import api from "../../services/api";
+import type { Book } from "../../types";
 
-interface Book {
-  id: string;
-  title: string;
-  isbn: string;
-}
+type AuthorBook = Pick<Book, "id" | "title" | "isbn">;
 
 export default function TicketForm() {
   const navigate = useNavigate();
@@ -16,7 +13,7 @@ export default function TicketForm() {
 
   const selectedBookId = searchParams.get("bookId");
 
-  const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<AuthorBook[]>([]);
   const [bookId, setBookId] = useState(selectedBookId ?? "");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -29,7 +26,7 @@ export default function TicketForm() {
     const fetchBooks = async () => {
       try {
         const response = await api.get("/books");
-        const authorBooks: Book[] = response.data.data.books;
+        const authorBooks: AuthorBook[] = response.data.data.books;
 
         setBooks(authorBooks);
 

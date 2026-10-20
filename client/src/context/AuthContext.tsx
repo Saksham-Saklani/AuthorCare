@@ -7,15 +7,9 @@ import {
 } from "react";
 import api from "../services/api";
 import socket from "../lib/socket";
+import type { User, UserRole } from "../types";
 
-export type UserRole = "AUTHOR" | "ADMIN";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-}
+export type { User, UserRole };
 
 interface AuthContextType {
   user: User | null;

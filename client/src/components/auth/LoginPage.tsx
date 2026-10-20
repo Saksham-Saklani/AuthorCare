@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 
@@ -9,6 +10,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,16 +19,19 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
     try {
-      const user = await login(email, password);
+      const user = await login(trimmedEmail, trimmedPassword);
       navigate(user.role === "ADMIN" ? "/admin" : "/author");
-    }catch (err) {
-  setError(
-    axios.isAxiosError(err)
-      ? err.response?.data?.message || "Login failed."
-      : "Something went wrong."
-  );
-}finally {
+    } catch (err) {
+      setError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || "Login failed."
+          : "Something went wrong."
+      );
+    } finally {
       setLoading(false);
     }
   };
@@ -46,17 +51,27 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full rounded border p-3"
+          className="w-full rounded border p-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full rounded border p-3"
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full rounded border p-3 pr-10 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
