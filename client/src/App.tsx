@@ -10,9 +10,13 @@ import BookDetails from "./components/author/BookDetails";
 import AuthorTickets from "./components/author/AuthorTickets";
 import AuthorTicketDetail from "./components/author/AuthorTicketDetails";
 import TicketForm from "./components/author/TicketForm";
+import AdminLayout from "./components/layout/AdminLayout";
+import AdminTickets from "./components/admin/AdminTickets";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import AdminTicketDetails from "./components/admin/AdminTicketDetails";
 
 function AppRoutes() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
 
   function PublicRoute({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
@@ -82,23 +86,12 @@ function AppRoutes() {
       <Route element={<ProtectedRoute allowedRole="ADMIN" />}>
         <Route
           path="/admin"
-          element={
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="mt-2">Welcome, {user?.name}.</p>
-
-              <button
-                onClick={async () => {
-                  await logout();
-                  window.location.replace("/login");
-                }}
-                className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-              >
-                Logout
-              </button>
-            </div>
-          }
-        />
+          element={<AdminLayout />}
+        >
+        <Route index element={<AdminDashboard />} />
+        <Route path="/admin/tickets" element={<AdminTickets />} />
+        <Route path="/admin/tickets/:ticketId" element={<AdminTicketDetails />} />
+        </Route>
       </Route>
 
       {/* Unknown routes */}
